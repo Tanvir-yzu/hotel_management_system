@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.room_number }} - {{ room.room_type }} - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <a href="{% url 'home' %}" class="inline-flex items-center mb-6 text-primary hover:text-blue-700">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Rooms
+    </a>
+
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-bold text-secondary mb-2">{{ room.room_number }} - {{ room.room_type }}</h2>
+                    <p class="text-accent text-2xl font-bold">${{ room.price_per_night }} <span class="text-sm text-gray-500">per night</span></p>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if room.is_available %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {% if room.is_available %}Available{% else %}Booked{% endif %}
+                </span>
+            </div>
+
+            <hr class="my-6 border-gray-200">
+
+            <div class="prose max-w-none">
+                <h3 class="text-xl font-semibold text-secondary mb-3">Room Description</h3>
+                <p class="text-gray-700 mb-6">
+                    {% if room.description %}
+                        {{ room.description }}
+                    {% else %}
+                        This {{ room.room_type }} room offers a comfortable stay with all the essential amenities. Perfect for travelers looking for quality accommodation.
+                    {% endif %}
+                </p>
+
+                <h3 class="text-xl font-semibold text-secondary mb-3">Amenities</h3>
+                <ul class="grid grid-cols-2 gap-2 mb-6">
+                    <li class="flex items-center text-gray-700">
+                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Free WiFi
+                    </li>
+                    <li class="flex items-center text-gray-700">
+                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Air Conditioning
+                    </li>
+                    <li class="flex items-center text-gray-700">
+                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        TV
+                    </li>
+                    <li class="flex items-center text-gray-700">
+                        <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Private Bathroom
+                    </li>
+                </ul>
+            </div>
+
+            {% if room.is_available %}
+                <div class="mt-6">
+                    <a href="{% url 'book_room' room.id %}" class="inline-block w-full md:w-auto px-6 py-3 bg-accent hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors text-center">
+                        Book This Room
+                    </a>
+                </div>
+            {% else %}
+                <div class="mt-6 bg-red-50 border-l-4 border-red-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">
+                                This room is currently not available for booking. Please check back later or choose another room.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

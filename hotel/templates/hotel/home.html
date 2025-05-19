@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-secondary mb-6">Welcome to Our Hotel</h2>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8" x-data="{ 
+        roomType: '', 
+        minPrice: '', 
+        maxPrice: '', 
+        availability: 'available',
+        sortBy: 'room_number',
+        isOpen: true
+    }">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-secondary">Search & Filter Rooms</h3>
+            <button @click="isOpen = !isOpen" class="text-gray-500 hover:text-gray-700">
+                <span x-show="isOpen">Hide Filters ↑</span>
+                <span x-show="!isOpen">Show Filters ↓</span>
+            </button>
+        </div>
+        
+        <form action="{% url 'search_rooms' %}" method="get" x-show="isOpen" x-transition>
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                <div class="space-y-2">
+                    <label for="room_type" class="block font-medium text-gray-700">Room Type:</label>
+                    <select name="room_type" id="room_type" x-model="roomType" 
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                        <option value="">All Types</option>
+                        <option value="Single">Single</option>
+                        <option value="Double">Double</option>
+                        <option value="Suite">Suite</option>
+                        <option value="Deluxe">Deluxe</option>
+                    </select>
+                </div>
+                
+                <div class="space-y-2">
+                    <label for="availability" class="block font-medium text-gray-700">Availability:</label>
+                    <select name="availability" id="availability" x-model="availability"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                        <option value="">Any</option>
+                        <option value="available" selected>Available Only</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                <div class="space-y-2">
+                    <label for="min_price" class="block font-medium text-gray-700">Min Price:</label>
+                    <input type="number" name="min_price" id="min_price" min="0" step="0.01" x-model="minPrice"
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                </div>
+                
+                <div class="space-y-2">
+                    <label for="max_price" class="block font-medium text-gray-700">Max Price:</label>
+                    <input type="number" name="max_price" id="max_price" min="0" step="0.01" x-model="maxPrice"
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="sort_by" class="block font-medium text-gray-700">Sort By:</label>
+                <select name="sort_by" id="sort_by" x-model="sortBy"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                    <option value="room_number">Room Number</option>
+                    <option value="price_asc">Price (Low to High)</option>
+                    <option value="price_desc">Price (High to Low)</option>
+                    <option value="room_type">Room Type</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="w-full md:w-auto px-6 py-2 bg-accent hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors">
+                Search & Filter
+            </button>
+        </form>
+    </div>
+
+    <h3 class="text-xl font-semibold text-secondary mb-4">Available Rooms</h3>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for room in rooms %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-secondary mb-2">{{ room.room_number }} - {{ room.room_type }}</h3>
+                    <p class="text-accent text-xl font-bold mb-3">${{ room.price_per_night }} <span class="text-sm text-gray-500">per night</span></p>
+                    <div class="flex justify-between items-center">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if room.is_available %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if room.is_available %}Available{% else %}Booked{% endif %}
+                        </span>
+                        <a href="{% url 'room_detail' room.id %}" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-colors">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

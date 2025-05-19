@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel Management System{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3498db',
+                        secondary: '#2c3e50',
+                        accent: '#4CAF50',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <header class="bg-secondary text-white py-4">
+        <div class="container mx-auto px-4">
+            <h1 class="text-2xl font-bold text-center">Hotel Management System</h1>
+        </div>
+    </header>
+    <nav class="bg-gray-800 text-white py-3">
+        <div class="container mx-auto px-4 flex justify-center space-x-6">
+            <a href="{% url 'home' %}" class="hover:text-primary transition-colors">Home</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="hover:text-primary transition-colors">Dashboard</a>
+                <a href="{% url 'logout' %}" class="hover:text-primary transition-colors">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="hover:text-primary transition-colors">Login</a>
+                <a href="{% url 'register' %}" class="hover:text-primary transition-colors">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+    <main class="container mx-auto px-4 py-6 flex-grow">
+        {% block content %}
+        <!-- Content will be added by child templates -->
+        {% endblock %}
+    </main>
+    <footer class="bg-secondary text-white py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2023 Hotel Management System. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

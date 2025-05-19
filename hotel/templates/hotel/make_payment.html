@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Make Payment - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <a href="{% url 'booking_success' booking.id %}" class="inline-flex items-center mb-6 text-primary hover:text-blue-700">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Booking Details
+    </a>
+
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-primary p-4">
+            <h2 class="text-2xl font-bold text-white">Make Payment</h2>
+        </div>
+        
+        <div class="p-6">
+            <div class="bg-gray-50 rounded-lg p-5 mb-6">
+                <h3 class="text-lg font-semibold text-secondary mb-4">Booking Details</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Guest:</span>
+                            <span class="font-medium">{{ booking.guest_name }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Room:</span>
+                            <span class="font-medium">{{ booking.room.room_number }} ({{ booking.room.room_type }})</span>
+                        </p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Check-in:</span>
+                            <span class="font-medium">{{ booking.check_in_date }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Check-out:</span>
+                            <span class="font-medium">{{ booking.check_out_date }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ booking.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div x-data="{ 
+                paymentMethod: '{{ form.payment_method.value|default:'Credit Card' }}',
+                isProcessing: false,
+                processPayment() {
+                    this.isProcessing = true;
+                    // This is just for UI demonstration - the actual submission happens via the form
+                    setTimeout(() => {
+                        document.getElementById('payment-form').submit();
+                    }, 1000);
+                }
+            }">
+                <h3 class="text-lg font-semibold text-secondary mb-4">Payment Information</h3>
+                
+                <form method="post" id="payment-form">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-4 mb-6">
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ field.label }}{% if field.field.required %} *{% endif %}
+                                </label>
+                                
+                                {% if field.name == 'payment_method' %}
+                                    <div class="mt-1">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            {% for value, text in field.field.choices %}
+                                                <div 
+                                                    @click="paymentMethod = '{{ value }}'"
+                                                    :class="{'border-primary ring-2 ring-primary': paymentMethod === '{{ value }}', 'border-gray-300': paymentMethod !== '{{ value }}'}"
+                                                    class="relative rounded-lg border bg-white p-4 flex cursor-pointer focus:outline-none transition-all duration-200">
+                                                    <div class="flex items-center justify-between w-full">
+                                                        <div class="flex items-center">
+                                                            <div class="text-sm">
+                                                                <div class="flex items-center">
+                                                                    {% if value == 'Credit Card' %}
+                                                                        <svg class="h-6 w-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                                                        </svg>
+                                                                    {% elif value == 'PayPal' %}
+                                                                        <svg class="h-6 w-6 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                                                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 4.643-5.783 4.643h-2.189c-.11 0-.203.077-.219.185l-.305 1.938h3.777c.21 0 .38.168.367.377l-.046.663c-.012.21-.193.377-.402.377h-3.43c-.21 0-.38-.168-.367-.377l.037-.53h-.524l-.037.53c-.013.21.157.377.367.377h.524l-.127 1.813c-.012.21.157.377.367.377h.524l.138-1.965h3.43c.21 0 .38-.168.367-.377l.046-.663c.012-.21-.157-.377-.367-.377h-3.777l.305-1.938c.016-.108.11-.185.22-.185h2.188c3.217 0 5.195-1.618 5.783-4.643.015-.079.028-.178.041-.254a3.35 3.35 0 0 0-.607-.541c-.881-.678-2.434-.93-4.43-.93h-7.46c-.11 0-.203.077-.219.185L.236 20.597c-.016.108.079.185.188.185h6.653c.11 0 .203-.077.219-.185l1.12-7.106c.016-.108.11-.185.22-.185h2.188c3.217 0 5.195-1.618 5.783-4.643.588-3.025-.861-4.643-4.078-4.643H7.076z"></path>
+                                                                        </svg>
+                                                                    {% elif value == 'Bank Transfer' %}
+                                                                        <svg class="h-6 w-6 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                                                        </svg>
+                                                                    {% elif value == 'Cash' %}
+                                                                        <svg class="h-6 w-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                                        </svg>
+                                                                    {% else %}
+                                                                        <svg class="h-6 w-6 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                        </svg>
+                                                                    {% endif %}
+                                                                    <span class="font-medium">{{ text }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div :class="{'text-primary': paymentMethod === '{{ value }}', 'text-gray-400': paymentMethod !== '{{ value }}'}">
+                                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <select name="{{ field.name }}" 
+                                                id="{{ field.id_for_label }}" 
+                                                x-model="paymentMethod"
+                                                class="hidden"
+                                                required>
+                                            {% for value, text in field.field.choices %}
+                                                <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ text }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% else %}
+                                    <input type="number" 
+                                           name="{{ field.name }}" 
+                                           id="{{ field.id_for_label }}" 
+                                           value="{{ field.value|default:'' }}"
+                                           step="0.01" 
+                                           min="0"
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                                           {% if field.field.required %}required{% endif %}>
+                                {% endif %}
+                                
+                                {% if field.errors %}
+                                    <div class="text-red-500 text-sm mt-1">
+                                        {{ field.errors }}
+                                    </div>
+                                {% endif %}
+                                
+                                {% if field.help_text %}
+                                    <p class="text-gray-500 text-xs mt-1">{{ field.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="bg-red-50 border-l-4 border-red-400 p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-red-700">
+                                            {{ form.non_field_errors }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button type="button" 
+                                @click="processPayment()" 
+                                class="w-full px-6 py-3 bg-accent hover:bg-green-600 text-white font-medium rounded-md shadow-sm transition-colors flex justify-center items-center"
+                                :disabled="isProcessing">
+                            <span x-show="!isProcessing">Complete Payment</span>
+                            <span x-show="isProcessing" class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

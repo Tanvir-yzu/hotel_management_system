@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Success - Hotel Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <!-- Success Header -->
+        <div class="bg-green-500 p-6">
+            <div class="flex items-center justify-center">
+                <div class="rounded-full bg-white p-2 mr-4">
+                    <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Payment Successful!</h2>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Payment Details Card -->
+            <div class="bg-gray-50 rounded-lg p-5 mb-6">
+                <h3 class="text-lg font-semibold text-secondary mb-4 border-b pb-2">Payment Details</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Payment ID:</span>
+                            <span class="font-medium">{{ payment.id }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Amount Paid:</span>
+                            <span class="font-medium text-green-600">${{ payment.amount_paid }}</span>
+                        </p>
+                    </div>
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Payment Method:</span>
+                            <span class="font-medium">
+                                {% if payment.payment_method == 'Credit Card' %}
+                                    <span class="inline-flex items-center">
+                                        <svg class="h-4 w-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                        </svg>
+                                        {{ payment.payment_method }}
+                                    </span>
+                                {% elif payment.payment_method == 'PayPal' %}
+                                    <span class="inline-flex items-center">
+                                        <svg class="h-4 w-4 mr-1 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"></path>
+                                        </svg>
+                                        {{ payment.payment_method }}
+                                    </span>
+                                {% elif payment.payment_method == 'Bank Transfer' %}
+                                    <span class="inline-flex items-center">
+                                        <svg class="h-4 w-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                        </svg>
+                                        {{ payment.payment_method }}
+                                    </span>
+                                {% elif payment.payment_method == 'Cash' %}
+                                    <span class="inline-flex items-center">
+                                        <svg class="h-4 w-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        {{ payment.payment_method }}
+                                    </span>
+                                {% else %}
+                                    {{ payment.payment_method }}
+                                {% endif %}
+                            </span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Payment Date:</span>
+                            <span class="font-medium">{{ payment.payment_date }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Details Card -->
+            <div class="bg-gray-50 rounded-lg p-5 mb-6">
+                <h3 class="text-lg font-semibold text-secondary mb-4 border-b pb-2">Booking Details</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Guest:</span>
+                            <span class="font-medium">{{ payment.booking.guest_name }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Room:</span>
+                            <span class="font-medium">{{ payment.booking.room.room_number }} ({{ payment.booking.room.room_type }})</span>
+                        </p>
+                    </div>
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Check-in:</span>
+                            <span class="font-medium">{{ payment.booking.check_in_date }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Check-out:</span>
+                            <span class="font-medium">{{ payment.booking.check_out_date }}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ payment.booking.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                <a href="{% url 'home' %}" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Return to Home
+                </a>
+                <button onclick="window.print()" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
