@@ -2,10 +2,18 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Booking, Payment
 from .forms import BookingForm, PaymentForm, RegistrationForm, LoginForm
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime
+from django.db import transaction
+import logging
+
+# Basic logging configuration
+logging.basicConfig(filename='email_errors.log',
+                    level=logging.ERROR,
+                    format='%(asctime)s:%(levelname)s:%(name)s:%(module)s:%(funcName)s:%(lineno)d:%(message)s')
+logger = logging.getLogger(__name__)
 
 def home(request):
     rooms = Room.objects.filter(is_available=True)
@@ -51,35 +59,59 @@ def book_room(request, room_id):
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.room = room
-            if room.is_available:
-                booking.save()
-                # Check availability for the selected dates
-                if not check_availability(room, booking.check_in_date, booking.check_out_date):
-                    booking.delete()
-                    form.add_error(None, "Room is not available for the selected dates.")
-                    return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
-                # Send confirmation email
-                try:
+            # General availability check for the room itself
+            if not room.is_available:
+                form.add_error(None, "This room is currently not available.")
+                return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
+
+            booking_details = form.cleaned_data
+
+            # Note: The problem description implies booking_id might be relevant for check_availability
+            # if we were updating a booking. However, this view seems to be for new bookings.
+            # Passing None or not passing booking_id for new bookings is appropriate.
+            # For this refactor, we assume new bookings, so booking.id isn't available yet.
+            if not check_availability(room, booking_details['check_in_date'], booking_details['check_out_date']):
+                form.add_error(None, "Room is not available for the selected dates.")
+                return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
+
+            try:
+                with transaction.atomic():
+                    booking = form.save(commit=False)
+                    booking.room = room
+                    if request.user.is_authenticated:
+                        booking.user = request.user
+                    # Ensure guest_email is still populated, e.g. from form, or from user.email
+                    # The BookingForm should ideally handle populating guest_name and guest_email.
+                    # If user is logged in, we can pre-fill guest_email from user.email if desired.
+                    # For now, we assume BookingForm collects guest_email.
+                    booking.save() # First save to get an ID, status should be 'Pending' or similar by default
+
+                    # Send confirmation email
+                    # This email should ideally be for a 'Pending' booking or a successful transactional save
                     send_confirmation_email(booking)
-                except Exception as e:
-                    # Log the error but don't stop the booking process
-                    print(f"Email sending failed: {e}")
-                return redirect('booking_success', booking_id=booking.id)
-            else:
-                form.add_error(None, "Room is not available.")
+
+                    return redirect('booking_success', booking_id=booking.id)
+            except Exception as e:
+                # Log the error if the transaction failed for some reason (other than availability)
+                print(f"Booking transaction failed: {e}")
+                form.add_error(None, "There was an issue processing your booking. Please try again.")
+                # Fall through to render the form again
     else:
         form = BookingForm()
     return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
 
-def check_availability(room, check_in_date, check_out_date):
+def check_availability(room, check_in_date, check_out_date, booking_id=None):
+    # Corrected overlap logic:
+    # A booking overlaps if its check-in is before the other's check-out
+    # AND its check-out is after the other's check-in.
     overlapping_bookings = Booking.objects.filter(
         room=room,
         status='Confirmed',
-        check_in_date__lte=check_out_date,
-        check_out_date__gte=check_in_date
+        check_in_date__lt=check_out_date,  # strictly less than
+        check_out_date__gt=check_in_date   # strictly greater than
     )
+    if booking_id:
+        overlapping_bookings = overlapping_bookings.exclude(id=booking_id)
     return not overlapping_bookings.exists()
 
 def send_confirmation_email(booking):
@@ -90,10 +122,8 @@ def send_confirmation_email(booking):
         recipient_list = [booking.guest_email]
         send_mail(subject, message, from_email, recipient_list)
     except Exception as e:
-        # Log the error but don't stop the booking process
-        print(f"Email sending failed: {e}")
-        # You could also log this to a file or database
-        raise  # Re-raise to be caught by the calling function
+        logger.error(f"Failed to send confirmation email for Booking ID {booking.id}: {e}", exc_info=True)
+        # Removed raise: allow booking to proceed even if email fails.
 
 @login_required
 def booking_success(request, booking_id):
@@ -115,8 +145,11 @@ def make_payment(request, booking_id):
             try:
                 send_payment_confirmation_email(payment)
             except Exception as e:
-                # Log the error but don't stop the payment process
-                print(f"Payment email sending failed: {e}")
+                # Error is logged within send_payment_confirmation_email, no need to print here
+                # If that function no longer raises, this try-except might be less critical here,
+                # but keeping it doesn't harm, in case other errors occur before/after email.
+                # The main change is that send_payment_confirmation_email itself won't raise for email issues.
+                pass # Email errors are logged by the function, allow flow to continue
             return redirect('payment_success', payment_id=payment.id)
     else:
         # Pre-fill the amount with the room price
@@ -136,9 +169,8 @@ def send_payment_confirmation_email(payment):
         recipient_list = [payment.booking.guest_email]
         send_mail(subject, message, from_email, recipient_list)
     except Exception as e:
-        # Log the error but don't stop the payment process
-        print(f"Email sending failed: {e}")
-        raise  # Re-raise to be caught by the calling function
+        logger.error(f"Failed to send payment confirmation email for Payment ID {payment.id} (Booking ID {payment.booking.id}): {e}", exc_info=True)
+        # Removed raise: allow payment confirmation to proceed even if email fails.
 
 @login_required
 def payment_success(request, payment_id):
@@ -196,16 +228,38 @@ def search_rooms(request):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def dashboard(request):
-    bookings = Booking.objects.all()
+    all_bookings_list = Booking.objects.all() # Renamed to avoid conflict if needed, used for total guests
     payments = Payment.objects.all()
     
     # Calculate total revenue
-    total_revenue = sum(payment.amount_paid for payment in payments)
+    total_revenue = sum(payment.amount_paid for payment in payments if payment.amount_paid is not None) # Added safety for None
     
+    # Booking counts by status
+    pending_bookings_count = Booking.objects.filter(status='Pending').count()
+    confirmed_bookings_count = Booking.objects.filter(status='Confirmed').count()
+    cancelled_bookings_count = Booking.objects.filter(status='Cancelled').count() # Assuming 'Cancelled' is a valid status
+
+    # Recent bookings
+    recent_bookings = Booking.objects.order_by('-booking_date')[:10]
+
+    # All rooms for availability display
+    all_rooms = Room.objects.all().order_by('room_number')
+
     context = {
-        'bookings': bookings,
+        'bookings': all_bookings_list, # Keep for existing template parts like "Total Guests"
         'payments': payments,
         'total_revenue': total_revenue,
+        'pending_bookings_count': pending_bookings_count,
+        'confirmed_bookings_count': confirmed_bookings_count,
+        'cancelled_bookings_count': cancelled_bookings_count,
+        'recent_bookings': recent_bookings,
+        'all_rooms': all_rooms,
     }
     return render(request, 'hotel/dashboard.html', context)
+
+@login_required
+def user_booking_history(request):
+    bookings = Booking.objects.filter(user=request.user).order_by('-check_in_date')
+    return render(request, 'hotel/user_booking_history.html', {'bookings': bookings})
