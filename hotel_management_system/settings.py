@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -135,3 +136,47 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
+
+
+JAZZMIN_SETTINGS = {
+  "site_title": "Hotel Management System",  
+  "site_brand": "Hotel Management",
+  "welcome_sign": "Welcome to the Hotel Management System",
+  "copyright": "Tanvir Ltd",
+  "user_avatar": None,
+  "topmenu_links": [
+    {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+    {"model": "auth.User"},
+    {"app": "hotel"},
+  ],
+  "usermenu_links": [
+    {"model": "auth.user"}
+  ],
+  "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+    },
+    # Icons that are used when one is not manually specified
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    
+    #################
+    # Related Modal #
+    #################
+    # Use modals instead of popups
+    "related_modal_active": False,
+
+    #############
+    # UI Tweaks #
+    #############
+    # Relative paths to custom CSS/JS scripts (must be present in static files)
+    "custom_css": None,
+    "custom_js": None,
+    # Whether to link font from fonts.googleapis.com (use custom_css to supply font otherwise)
+    "use_google_fonts_cdn": True,
+    # Whether to show the UI customizer on the sidebar
+    "show_ui_builder": False,
+  
+    
+}

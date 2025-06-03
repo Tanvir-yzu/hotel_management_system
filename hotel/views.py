@@ -194,6 +194,51 @@ def search_rooms(request):
     
     return render(request, 'hotel/search_results.html', context)
 
+def search_rooms(request):
+    room_type = request.GET.get('room_type')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    availability = request.GET.get('availability')
+    sort_by = request.GET.get('sort_by')
+    
+    rooms = Room.objects.all()
+    
+    if room_type:
+        rooms = rooms.filter(room_type__name=room_type)
+    if min_price:
+        rooms = rooms.filter(price_per_night__gte=min_price)
+    if max_price:
+        rooms = rooms.filter(price_per_night__lte=max_price)
+    if availability == 'available':
+        rooms = rooms.filter(is_available=True)
+    
+    sort_by_display = "Room Number"
+    if sort_by:
+        if sort_by == 'price_asc':
+            rooms = rooms.order_by('price_per_night')
+            sort_by_display = "Price (Low to High)"
+        elif sort_by == 'price_desc':
+            rooms = rooms.order_by('-price_per_night')
+            sort_by_display = "Price (High to Low)"
+        elif sort_by == 'room_type':
+            rooms = rooms.order_by('room_type')
+            sort_by_display = "Room Type"
+        else:
+            rooms = rooms.order_by('room_number')
+    else:
+        rooms = rooms.order_by('room_number')
+
+    context = {
+        'rooms': rooms,
+        'room_type': room_type,
+        'min_price': min_price,
+        'max_price': max_price,
+        'availability': 'Available Only' if availability == 'available' else availability,
+        'sort_by': sort_by,
+        'sort_by_display': sort_by_display
+    }
+    
+    return render(request, 'hotel/search_results.html', context)
 
 @login_required
 def dashboard(request):
