@@ -48,30 +48,32 @@ def user_logout(request):
 @login_required
 def book_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
+
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
-            booking.room = room
-            if room.is_available:
-                booking.save()
-                # Check availability for the selected dates
-                if not check_availability(room, booking.check_in_date, booking.check_out_date):
-                    booking.delete()
-                    form.add_error(None, "Room is not available for the selected dates.")
-                    return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
-                # Send confirmation email
-                try:
-                    send_confirmation_email(booking)
-                except Exception as e:
-                    # Log the error but don't stop the booking process
-                    print(f"Email sending failed: {e}")
-                return redirect('booking_success', booking_id=booking.id)
-            else:
-                form.add_error(None, "Room is not available.")
+            booking.room = room  # assign room before saving or using booking.room
+
+            # Check availability BEFORE saving booking
+            if not check_availability(room, booking.check_in_date, booking.check_out_date):
+                form.add_error(None, "Room is not available for the selected dates.")
+                return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
+
+            booking.save()  # now save the booking with room assigned
+
+            try:
+                send_confirmation_email(booking)
+            except Exception as e:
+                # log error or print it
+                print(f"Email sending failed: {e}")
+
+            return redirect('booking_success', booking_id=booking.id)
     else:
         form = BookingForm()
+
     return render(request, 'hotel/book_room.html', {'form': form, 'room': room})
+
 
 def check_availability(room, check_in_date, check_out_date):
     overlapping_bookings = Booking.objects.filter(
@@ -120,7 +122,7 @@ def make_payment(request, booking_id):
             return redirect('payment_success', payment_id=payment.id)
     else:
         # Pre-fill the amount with the room price
-        initial_amount = booking.room.price_per_night
+        initial_amount = booking.room.room_type.price_per_night
         # Calculate number of nights
         nights = (booking.check_out_date - booking.check_in_date).days
         if nights > 0:
