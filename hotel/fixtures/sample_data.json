@@ -1,0 +1,181 @@
+[
+    {
+      "model": "hotel.roomtype",
+      "pk": 4,
+      "fields": {
+        "type_name": "Deluxe",
+        "price_per_night": "200.00",
+        "capacity": 3
+      }
+    },
+    {
+      "model": "hotel.room",
+      "pk": 4,
+      "fields": {
+        "room_number": "202",
+        "room_type": 4,
+        "is_available": true,
+        "floor_number": 2,
+        "room_size": "35.00",
+        "has_balcony": true,
+        "has_view": true,
+        "view_description": "City View"
+      }
+    },
+    {
+      "model": "hotel.room",
+      "pk": 5,
+      "fields": {
+        "room_number": "203",
+        "room_type": 4,
+        "is_available": false,
+        "floor_number": 2,
+        "room_size": "38.00",
+        "has_balcony": true,
+        "has_view": true,
+        "view_description": "Garden View"
+      }
+    },
+    {
+      "model": "hotel.guest",
+      "pk": 2,
+      "fields": {
+        "name": "Bob Smith",
+        "email": "bob@example.com",
+        "phone_number": "1234567890",
+        "address": "456 Elm Street",
+        "id_number": "ID67890",
+        "date_of_birth": "1985-08-15",
+        "registration_date": "2025-06-08T15:30:00Z",
+        "is_vip": true
+      }
+    },
+    {
+      "model": "hotel.guest",
+      "pk": 3,
+      "fields": {
+        "name": "Carla White",
+        "email": "carla@example.com",
+        "phone_number": "0987654321",
+        "address": "789 Oak Lane",
+        "id_number": "ID34567",
+        "date_of_birth": "1992-04-22",
+        "registration_date": "2025-06-09T08:00:00Z",
+        "is_vip": false
+      }
+    },
+    {
+      "model": "hotel.booking",
+      "pk": 2,
+      "fields": {
+        "room": 4,
+        "guest": 2,
+        "check_in_date": "2025-06-10",
+        "check_out_date": "2025-06-13",
+        "booking_date": "2025-06-08T16:00:00Z",
+        "status": "Pending",
+        "guest_name": "",
+        "guest_email": "",
+        "special_requests": "Late check-in",
+        "number_of_guests": 2,
+        "total_price": "600.00",
+        "is_paid": false,
+        "payment_method_used": "Mobile Payment"
+      }
+    },
+    {
+      "model": "hotel.booking",
+      "pk": 3,
+      "fields": {
+        "room": 5,
+        "guest": 3,
+        "check_in_date": "2025-06-09",
+        "check_out_date": "2025-06-12",
+        "booking_date": "2025-06-09T09:00:00Z",
+        "status": "Confirmed",
+        "guest_name": "",
+        "guest_email": "",
+        "special_requests": "",
+        "number_of_guests": 2,
+        "total_price": "600.00",
+        "is_paid": true,
+        "payment_method_used": "Online"
+      }
+    },
+    {
+      "model": "hotel.payment",
+      "pk": 2,
+      "fields": {
+        "booking": 3,
+        "amount_paid": "600.00",
+        "payment_type": "Full",
+        "payment_method_type": "Online",
+        "payment_date": "2025-06-09T09:15:00Z",
+        "payment_method": "PayPal",
+        "transaction_id": "TX789654",
+        "payment_reference": "REF002",
+        "receipt_url": ""
+      }
+    },
+    {
+      "model": "hotel.roomservice",
+      "pk": 2,
+      "fields": {
+        "booking": 3,
+        "service_name": "Lunch",
+        "description": "Vegetarian meal",
+        "quantity": 2,
+        "price_per_unit": "25.00",
+        "service_date": "2025-06-10T13:00:00Z",
+        "status": "Completed"
+      }
+    },
+    {
+      "model": "hotel.roomservice",
+      "pk": 3,
+      "fields": {
+        "booking": 3,
+        "service_name": "Laundry",
+        "description": "Shirts and pants",
+        "quantity": 1,
+        "price_per_unit": "15.00",
+        "service_date": "2025-06-11T11:00:00Z",
+        "status": "Pending"
+      }
+    },
+    {
+      "model": "hotel.housekeeping",
+      "pk": 2,
+      "fields": {
+        "room": 5,
+        "cleaning_date": "2025-06-10",
+        "cleaning_time": "11:30:00",
+        "status": "Scheduled",
+        "notes": ""
+      }
+    },
+    {
+      "model": "hotel.maintenancerequest",
+      "pk": 2,
+      "fields": {
+        "room": 4,
+        "request_date": "2025-06-09T10:00:00Z",
+        "description": "TV remote not working",
+        "status": "Pending",
+        "assigned_to": null,
+        "resolution_notes": ""
+      }
+    },
+    {
+      "model": "hotel.review",
+      "pk": 2,
+      "fields": {
+        "booking": 3,
+        "rating": 4,
+        "comment": "Clean room and good service.",
+        "review_date": "2025-06-12T12:00:00Z",
+        "is_public": true
+      }
+    }
+  ]
+  
