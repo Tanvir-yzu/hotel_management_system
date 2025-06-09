@@ -134,11 +134,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = '2020tanvir1971@gmail.com'
+EMAIL_HOST_PASSWORD = 'okhx ufsk jygo uzlu'
 
 
 JAZZMIN_SETTINGS = {
+  "site_header": "Hotel Management System",
+  "site_header_color": "#007bff",
+  "site_footer": "Hotel Management System",
   "site_title": "Hotel Management System",  
   "site_brand": "Hotel Management",
   "welcome_sign": "Welcome to the Hotel Management System",
